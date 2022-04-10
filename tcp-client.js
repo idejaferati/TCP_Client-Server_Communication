@@ -1,6 +1,5 @@
 // Include Nodejs' net module.
 const Net = require('net');
-const fs = require('fs')
 // The port number and hostname of the server.
 const port = 8080;
 const host = '127.0.0.1'; 
