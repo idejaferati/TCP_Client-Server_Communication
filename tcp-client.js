@@ -28,27 +28,11 @@ client.on('data', function(chunk) {
     } 
 }); 
 
-// read file
-var readFile = fs.readFile('file.txt', 'utf8' , (err, data) => {
-  if (err) {
-    console.error(err)
-    return
-  }
-  console.log(data)
-})
 
-// write file
-const content = 'Some content!'
 
-try {
-  fs.writeFileSync('test.txt', content)
-  //file written successfully
-} catch (err) {
-  console.error(err)
-}
 
-// edit a file
-fs.writeFile('test.txt', content, { flag: 'a+' }, err => {})
+
+
 
 // Add a 'close' event handler for the client socket 
 client.on('close', () => { 
