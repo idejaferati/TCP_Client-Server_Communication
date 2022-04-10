@@ -1,8 +1,9 @@
 // Include Nodejs' net module.
 const Net = require('net');
+const prompt = require("prompt-sync")({ sigint: true });
 // The port number and hostname of the server.
 const port = 8080;
-const host = '127.0.0.1'; 
+const host = prompt("Please write the IP address you want to connect with: "); 
 
 // Create a new TCP client.
 const client = new Net.Socket(); 

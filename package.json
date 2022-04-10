@@ -9,9 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "net": "^1.0.2"
+    "net": "^1.0.2",
+    "prompt-sync": "^4.2.0"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/idejaferati/ComputerNetwork.git"
