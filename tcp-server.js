@@ -45,7 +45,27 @@ server.on('connection', function(socket) {
         }); 
         console.log(`connection closed: ${clientAddress}`+'\n'); 
     }); 
+ 
+    var data = 'a string';
+    var file = './file';
 
+    fs.writeFile(file, data, function(err) {
+    if (err) throw err;
+    // file has been written to disk
+    });
+
+    // or synchronously writing a file
+    fs.writeFileSync(file, data);
+
+    // fetch the data asynchronously
+    fs.readFile(file, function(err, data) {
+    // we have "a string"
+    });
+
+    // synchronously reading a file
+    var str = fs.readFileSync(file);
+    
+    
     // In case errors happen
     socket.on('error', function(err) {
         console.log(`Error: ${err}`);
