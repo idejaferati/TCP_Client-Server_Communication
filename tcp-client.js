@@ -15,7 +15,8 @@ client.connect(port, host, function() {
     console.log(`TCP connection established with the server on ${host}:${port}`+'\n'); 
 
     // The client can now send data to the server by writing to its socket.
-    client.write(`Hello, server. I am ${client.address().address}.`+'\n');
+    var text = prompt("Username and password: ");
+    client.write(text);
 }); 
 
 // The client can also receive data from the server by reading from its socket.
@@ -27,11 +28,6 @@ client.on('data', function(chunk) {
         client.destroy(); 
     } 
 }); 
-
-
-
-
-
 
 
 // Add a 'close' event handler for the client socket 
