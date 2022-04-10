@@ -33,8 +33,51 @@ server.on('connection', function(socket) {
         sockets.forEach(function(sock) { 
             sock.write(socket.remoteAddress + ':' + socket.remotePort + " said " + data + '\n'); 
         }); 
-    }); 
+        console.log(data.toString().slice(''));
+        let message = data.toString().trim();
 
+        switch(message){
+            case "ideja 012345":
+                                console.log("\n ----------------------------------------- ");
+                                console.log("\n Allowed to read, write, and execute files! ");
+                                console.log("\n ----------------------------------------- ");
+                                fs.chmod("file.txt", 0o600, () => {
+                                    console.log("\n Reading the file contents before changes/writes: ");
+                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
+                                    console.log("\n ----------------------------------------- ");
+                                    console.log(" \nTrying to write to file");
+                                    fs.writeFileSync('file.txt', "\n~~~~This is the new written file!~~~~");
+                                    console.log("\nThe file after the changes function!");
+                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
+                                    console.log("\n ----------------------------------------- ");
+                                }); 
+                                break;
+                                
+                case "jetak 678910":
+                                console.log("\n ----------------------------------------- ");
+                                console.log("\n Allowed only to read! ");
+                                console.log("\n ----------------------------------------- ");
+                                fs.chmod("file.txt", 0o600, () => {
+                                    console.log("\n The content of the file you are reading!\n");
+                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
+                                }); 
+                                break;
+                case "jetal 111213":
+                                console.log("\n ----------------------------------------- ");
+                                console.log("\n Allowed only to read! ");
+                                console.log("\n ----------------------------------------- ");
+                                fs.chmod("file.txt", 0o600, () => {
+                                    console.log("\n The content of the file you are reading!\n");
+                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
+
+                                }); 
+                                break;
+            default:
+                console.log("This user doesn't exist");
+                socket.write("Write something else please!");
+        }
+        
+    }); 
     // Add a 'close' event handler to this instance of socket 
     socket.on('close', function(data) { 
         let index = sockets.findIndex(function(o) { 
@@ -48,24 +91,24 @@ server.on('connection', function(socket) {
         console.log(`connection closed: ${clientAddress}`+'\n'); 
     }); 
  
-    var data = 'a string';
-    var file = './file';
+//     var data = 'a string';
+//     var file = './file';
 
-    fs.writeFile(file, data, function(err) {
-    if (err) throw err;
-    // file has been written to disk
-    });
+//     fs.writeFile(file, data, function(err) {
+//     if (err) throw err;
+//     // file has been written to disk
+//     });
 
-    // or synchronously writing a file
-    fs.writeFileSync(file, data);
+//     // or synchronously writing a file
+//     fs.writeFileSync(file, data);
 
-    // fetch the data asynchronously
-    fs.readFile(file, function(err, data) {
-    // we have "a string"
-    });
+//     // fetch the data asynchronously
+//     fs.readFile(file, function(err, data) {
+//     // we have "a string"
+//     });
 
-    // synchronously reading a file
-    var str = fs.readFileSync(file);
+//     // synchronously reading a file
+//     var str = fs.readFileSync(file);
     
     
     // In case errors happen
@@ -73,3 +116,5 @@ server.on('connection', function(socket) {
         console.log(`Error: ${err}`);
     }); 
 }); 
+
+server.maxConnections = 4;
