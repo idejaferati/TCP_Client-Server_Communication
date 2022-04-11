@@ -32,7 +32,7 @@ server.on('connection', function(socket) {
 
     socket.on('data', function(message) {  
 
-        const file = './file.txt';
+        const file = `./allfiles/${message.toString().split(" ")[2]}`;
 
         if (message.includes('/file')) {
 
@@ -41,7 +41,7 @@ server.on('connection', function(socket) {
                     var messageToWrite = "";
                     //get message from cmd command (example: get HELLO WOLRD from command /file write HELLO WORLD)
                     for(let i = 0; i < message.toString().split(" ").length; i++){
-                        if(i > 1){
+                        if(i > 2){
                             messageToWrite = messageToWrite + message.toString().split(" ")[i] + " ";
                          }
                     }
