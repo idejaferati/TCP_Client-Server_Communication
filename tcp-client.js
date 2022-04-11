@@ -13,7 +13,6 @@ client.connect(port, host,function() {
     // If there is no error, the server has accepted the request and created a new 
     // socket dedicated to client.
     console.log(`TCP connection established with the server on ${host}:${port}`+'\n'); 
-
 }); 
 
 // The client can also receive data from the server by reading from its socket.
@@ -24,10 +23,11 @@ client.on('data', function(chunk) {
     if (chunk.toString().endsWith('exit')) { 
         client.destroy(); 
     } 
-    
-    var text = prompt("Write something: ");
-    client.write(text);
-    
+
+    if (!chunk.includes('/file read')) {
+        var text = prompt("Write something: ");
+        client.write(text);
+    }  
 });
 
 // Add a 'close' event handler for the client socket 

@@ -28,10 +28,11 @@ server.on('connection', function(socket) {
     sockets.push(socket);
 
     var clientName = 'Client' + sockets.length;
+    socket.nickname = clientName;
 
     socket.on('data', function(message) {  
 
-        const file = './file';
+        const file = './file.txt';
 
         if (message.includes('/file')) {
 
@@ -98,8 +99,7 @@ server.on('connection', function(socket) {
                     return "Error with file permissions";
             }
         } else {
-            socket.write("HI");
-            //broadcast(socket.remotePort, message, socket.nickname);
+            console.log(socket.nickname + ": " + message);
         }
     }); 
 
@@ -127,11 +127,11 @@ function checkPermission(user, action) {
     switch(user) {
         case "Client1":  value = ['read', 'write', 'execute'].includes(action);break;
         case "Client2":  
-        case "Client3":  value = ['read'].includes(action);break;
+        case "Client3":  
+        case "Client4":  value = ['read'].includes(action);break;
     }
     if (value == false) {
         console.log("Permission denied");
     } 
     return value;
 }
-
