@@ -1,15 +1,17 @@
 // Include Nodejs' net module.
 const Net = require('net');
 const fs = require('fs');
-const prompt = require("prompt-sync")({ sigint: true });
+const { execFile } = require('child_process');
+const process = require('process');
+
 // The port on which the server is listening.
-const port = 8080; 
-const host = prompt("Please write the IP address: ");
+const port = 8484; 
+const host = '192.168.178.46'; 
 
 // Create a new TCP server.
 const server = Net.createServer(function(socket) {
     socket.write('Echo server created\r\n');
-    socket.pipe(socket);
+    //socket.pipe(socket);
 }); 
 
 // The server listens to a socket for a client to make a connection request.
@@ -22,62 +24,85 @@ let sockets = [];
 // socket dedicated to that client.
 server.on('connection', function(socket) { 
     var clientAddress = `${socket.remoteAddress}:${socket.remotePort}`; 
-    console.log(`A new connection has been established. Client on ${clientAddress}`+'\n'); 
-    sockets.push(socket); 
-    // Now that a TCP connection has been established, the server can send data to
-    // the client by writing to its socket.
-    socket.write(`Hello, client ${clientAddress}`);
+    console.log(`A new connection has been established. Client on ${clientAddress}`+'\n');
+    sockets.push(socket);
 
-    socket.on('data', function(data) {  
-        // Write the data back to all the connected, the client will receive it as data from the server 
-        sockets.forEach(function(sock) { 
-            sock.write(socket.remoteAddress + ':' + socket.remotePort + " said " + data + '\n'); 
-        }); 
-        console.log(data.toString().slice(''));
-        let message = data.toString().trim();
+    var clientName = 'Client' + sockets.length;
 
-        switch(message){
-            case "ideja 012345":
-                                console.log("\n ----------------------------------------- ");
-                                console.log("\n Allowed to read, write, and execute files! ");
-                                console.log("\n ----------------------------------------- ");
-                                fs.chmod("file.txt", 0o600, () => {
-                                    console.log("\n Reading the file contents before changes/writes: ");
-                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
-                                    console.log("\n ----------------------------------------- ");
-                                    console.log(" \nTrying to write to file");
-                                    fs.writeFileSync('file.txt', "\n~~~~This is the new written file!~~~~");
-                                    console.log("\nThe file after the changes function!");
-                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
-                                    console.log("\n ----------------------------------------- ");
-                                }); 
-                                break;
-                                
-                case "jetak 678910":
-                                console.log("\n ----------------------------------------- ");
-                                console.log("\n Allowed only to read! ");
-                                console.log("\n ----------------------------------------- ");
-                                fs.chmod("file.txt", 0o600, () => {
-                                    console.log("\n The content of the file you are reading!\n");
-                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
-                                }); 
-                                break;
-                case "jetal 111213":
-                                console.log("\n ----------------------------------------- ");
-                                console.log("\n Allowed only to read! ");
-                                console.log("\n ----------------------------------------- ");
-                                fs.chmod("file.txt", 0o600, () => {
-                                    console.log("\n The content of the file you are reading!\n");
-                                    console.log(fs.readFileSync('file.txt', 'utf-8'));
+    socket.on('data', function(message) {  
 
-                                }); 
-                                break;
-            default:
-                console.log("This user doesn't exist");
-                socket.write("Write something else please!");
+        const file = './file';
+
+        if (message.includes('/file')) {
+
+            switch(message.toString().split(" ")[1]){
+                case "write":
+                    var messageToWrite = "";
+
+                    for(let i = 0; i < message.toString().split(" ").length; i++){
+                        if(i > 1){
+                            messageToWrite = messageToWrite + message.toString().split(" ")[i] + " ";
+                         }
+                    }
+                    
+                    if (checkPermission(clientName, "write") == true) {
+                        console.log('---- Writing ----');
+
+                        fs.writeFile(file, messageToWrite, { flag: 'a+'}, error => {
+                            if(error){
+                                console.error(error);
+                                return;
+                            }
+                            console.log('---- Message has been written! ----');
+                        })
+                    }
+                    break;
+
+                case "execute":
+
+                    if (checkPermission(clientName, "execute") == true) {
+                        console.log("inside execute permissions");
+                        execFile(
+                            'cmd', [ '/c', 'start', '""', 'file.txt' ], { cwd: process.cwd() },
+                            (error, stdout, stderr) => {
+                              if (error) {
+                                console.log(`error: ${error}`);
+                                return;
+                              }
+                              if (stderr) {
+                                console.log(`stderr: ${stderr}`);
+                                return;
+                              }
+                            }
+                        );
+                
+                    }
+                    break;
+                                    
+                case "read":
+                    var content = "";
+                    if (checkPermission(clientName, "read") == true) {
+                        console.log('---- Reading ----');
+                        content = fs.readFileSync(file, 'utf8', { flag: 'r'}, (err, data) => {
+                            debugger;
+                            if(err){
+                                console.error(err); 
+                                return;
+                            }
+                        })
+                    }
+                    socket.write(content.toString());
+                    break;
+
+                default:
+                    return "Error with file permissions";
+            }
+        } else {
+            socket.write("HI");
+            //broadcast(socket.remotePort, message, socket.nickname);
         }
-        
     }); 
+
     // Add a 'close' event handler to this instance of socket 
     socket.on('close', function(data) { 
         let index = sockets.findIndex(function(o) { 
@@ -86,35 +111,27 @@ server.on('connection', function(socket) {
 
         if (index !== -1) sockets.splice(index, 1); 
         sockets.forEach((sock) => { 
-            sock.write(`${clientAddress} disconnected\n`); 
-        }); 
-        console.log(`connection closed: ${clientAddress}`+'\n'); 
-    }); 
- 
-//     var data = 'a string';
-//     var file = './file';
-
-//     fs.writeFile(file, data, function(err) {
-//     if (err) throw err;
-//     // file has been written to disk
-//     });
-
-//     // or synchronously writing a file
-//     fs.writeFileSync(file, data);
-
-//     // fetch the data asynchronously
-//     fs.readFile(file, function(err, data) {
-//     // we have "a string"
-//     });
-
-//     // synchronously reading a file
-//     var str = fs.readFileSync(file);
-    
+            sock.write(`${clientAddress} disconnected\n`);
+        }); 
+        console.log(`connection closed: ${clientAddress}`+'\n');
+    }); 
     
     // In case errors happen
     socket.on('error', function(err) {
         console.log(`Error: ${err}`);
-    }); 
-}); 
+    });
+});
 
-server.maxConnections = 4;
+function checkPermission(user, action) {
+    var value;
+    switch(user) {
+        case "Client1":  value = ['read', 'write', 'execute'].includes(action);break;
+        case "Client2":  
+        case "Client3":  value = ['read'].includes(action);break;
+    }
+    if (value == false) {
+        console.log("Permission denied");
+    } 
+    return value;
+}
+
