@@ -11,7 +11,7 @@ const host = '192.168.178.46';
 // Create a new TCP server.
 const server = Net.createServer(function(socket) {
     socket.write('Echo server created\r\n');
-    //socket.pipe(socket);
+    socket.pipe(socket);
 }); 
 
 // The server listens to a socket for a client to make a connection request.
@@ -39,7 +39,7 @@ server.on('connection', function(socket) {
             switch(message.toString().split(" ")[1]){
                 case "write":
                     var messageToWrite = "";
-
+                    //get message from cmd command (example: get HELLO WOLRD from command /file write HELLO WORLD)
                     for(let i = 0; i < message.toString().split(" ").length; i++){
                         if(i > 1){
                             messageToWrite = messageToWrite + message.toString().split(" ")[i] + " ";
@@ -47,7 +47,7 @@ server.on('connection', function(socket) {
                     }
                     
                     if (checkPermission(clientName, "write") == true) {
-                        console.log('---- Writing ----');
+                        console.log(socket.nickname + '--- has written a message in the file');
 
                         fs.writeFile(file, messageToWrite, { flag: 'a+'}, error => {
                             if(error){
@@ -62,9 +62,9 @@ server.on('connection', function(socket) {
                 case "execute":
 
                     if (checkPermission(clientName, "execute") == true) {
-                        console.log("inside execute permissions");
+                        console.log(socket.nickname + "--- has executed the file");
                         execFile(
-                            'cmd', [ '/c', 'start', '""', 'file.txt' ], { cwd: process.cwd() },
+                            'cmd', [ '/c', 'start', '""', file ], { cwd: process.cwd() },
                             (error, stdout, stderr) => {
                               if (error) {
                                 console.log(`error: ${error}`);
@@ -83,9 +83,8 @@ server.on('connection', function(socket) {
                 case "read":
                     var content = "";
                     if (checkPermission(clientName, "read") == true) {
-                        console.log('---- Reading ----');
+                        console.log(socket.nickname + '--- has read the contents of file');
                         content = fs.readFileSync(file, 'utf8', { flag: 'r'}, (err, data) => {
-                            debugger;
                             if(err){
                                 console.error(err); 
                                 return;
@@ -129,6 +128,7 @@ function checkPermission(user, action) {
         case "Client2":  
         case "Client3":  
         case "Client4":  value = ['read'].includes(action);break;
+        default: value = false;
     }
     if (value == false) {
         console.log("Permission denied");
