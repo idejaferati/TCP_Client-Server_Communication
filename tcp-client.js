@@ -1,9 +1,15 @@
 // Include Nodejs' net module.
 const Net = require('net');
 const prompt = require('prompt-sync')();
+const { execFile } = require('child_process');
+const process = require('process');
+
 // The port number and hostname of the server.
 const port = 8484;
-const host = '192.168.178.46'; 
+//'192.168.43.116' - IDEJA
+//192.168.43.162 - JETA L
+//192.168.43.10 - JETA K
+const host = '192.168.43.162'; 
 
 // Create a new TCP client.
 const client = new Net.Socket(); 
@@ -24,10 +30,32 @@ client.on('data', function(chunk) {
         client.destroy(); 
     } 
 
-    if (!chunk.includes('/file read')) {
+    if (chunk.toString().includes('allowed to execute') && !chunk.toString().includes('not')) {
+        const file = chunk.toString().split('---')[1];
+        
+        execFile(
+            'cmd', [ '/c', 'start', '""', file ], { cwd: process.cwd() },
+            (error, stdout, stderr) => {
+              if (error) {
+                console.log(`error: ${error}`);
+                return;
+              }
+              if (stderr) {
+                console.log(`stderr: ${stderr}`);
+                return;
+              }
+            }
+        );
+    } 
+
+    
+    if ((!chunk.includes('/file read') && !chunk.includes('/file list') && !chunk.includes('/file execute')) 
+        || (chunk.includes('/file execute') && chunk.includes('.txt... '))) {
         var text = prompt("Write something: ");
         client.write(text);
-    }  
+    } 
+
+ 
 });
 
 // Add a 'close' event handler for the client socket 

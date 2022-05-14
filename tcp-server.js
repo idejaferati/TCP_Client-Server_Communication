@@ -1,12 +1,13 @@
 // Include Nodejs' net module.
 const Net = require('net');
-const fs = require('fs');
-const { execFile } = require('child_process');
-const process = require('process');
+const fs = require('fs'); 
 
 // The port on which the server is listening.
 const port = 8484; 
-const host = '192.168.178.46'; 
+//192.168.43.116 - IDEJA
+//192.168.43.162 - JETA L
+//192.168.43.10 - JETA K
+const host = '192.168.43.162'; 
 
 // Create a new TCP server.
 const server = Net.createServer(function(socket) {
@@ -19,6 +20,7 @@ server.listen(port, host, function() {
     console.log(`Server listening for connection requests on socket ${host}:${port}`+'\n'); 
 }); 
 
+const testFolder = './allfiles/';
 let sockets = []; 
 // When a client requests a connection with the server, the server creates a new
 // socket dedicated to that client.
@@ -60,23 +62,9 @@ server.on('connection', function(socket) {
                     break;
 
                 case "execute":
-
                     if (checkPermission(clientName, "execute") == true) {
-                        console.log(socket.nickname + "--- has executed the file");
-                        execFile(
-                            'cmd', [ '/c', 'start', '""', file ], { cwd: process.cwd() },
-                            (error, stdout, stderr) => {
-                              if (error) {
-                                console.log(`error: ${error}`);
-                                return;
-                              }
-                              if (stderr) {
-                                console.log(`stderr: ${stderr}`);
-                                return;
-                              }
-                            }
-                        );
-                
+                        console.log(socket.nickname + "--- has executed the file"); 
+                        socket.write("... You are allowed to execute file---"+file.toString());                  
                     }
                     break;
                                     
@@ -93,7 +81,19 @@ server.on('connection', function(socket) {
                     }
                     socket.write(content.toString());
                     break;
-
+                case "list":
+                        let vargu = [];
+    
+                         fs.readdir(testFolder, (err, files) => {
+    
+                        for(let i = 0; i<files.length; i++){
+                            vargu[i] = files[i];
+                        }
+    
+                        let stringu = vargu.toString();
+                        socket.write(stringu);
+                    });
+                    break;
                 default:
                     return "Error with file permissions";
             }
@@ -104,14 +104,6 @@ server.on('connection', function(socket) {
 
     // Add a 'close' event handler to this instance of socket 
     socket.on('close', function(data) { 
-        let index = sockets.findIndex(function(o) { 
-            return o.remoteAddress === socket.remoteAddress && o.remotePort === socket.remotePort; 
-        }) 
-
-        if (index !== -1) sockets.splice(index, 1); 
-        sockets.forEach((sock) => { 
-            sock.write(`${clientAddress} disconnected\n`);
-        }); 
         console.log(`connection closed: ${clientAddress}`+'\n');
     }); 
     
